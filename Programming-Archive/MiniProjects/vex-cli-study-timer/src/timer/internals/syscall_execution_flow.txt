@@ -1,0 +1,41 @@
+===================================================================
+->      Syscall Execution Flow (User Space vs Kernel Space)      <-
+===================================================================
+
+
+USER SPACE (Your Program)                   KERNEL SPACE (Operating System)
+─────────────────────────                   ───────────────────────────────
+
+RAX=35  ─┐
+RDI=ptr ─┤
+RSI=0   ─┤
+         │
+┌────────▼────────┐
+│     syscall     │   CPU jumps
+│(CPU instruction)│ ────────────────►   Kernel takes control
+└─────────────────┘                     
+                                        ┌─────────────────────────┐
+                                        │ 1. Checks RAX = 35      │
+                                        │   -> This is nanosleep  │
+                                        │                         │
+                                        │ 2. Reads RDI            │
+                                        │   -> Goes to the memory │
+                                        │    address to fetch     │
+                                        │    tv_sec, tv_nsec      │
+                                        │                         │
+                                        │ 3. RSI = 0              │
+                                        │   -> Will not store the │
+                                        │    "remaining time"     │
+                                        │                         │
+                                        │ 4. Program is put to    │
+                                        │    "sleep" for the      │
+                                        │    sec.nsec duration    │
+                                        └───────────┬─────────────┘
+                                                    │
+                           (After time expires)     │
+                                                    │
+┌──────────────────────┐                            │
+│ Control returns to   │ ◄──────────────────────────┘
+│ the line right after │
+│ the "syscall"        │
+└──────────────────────┘
