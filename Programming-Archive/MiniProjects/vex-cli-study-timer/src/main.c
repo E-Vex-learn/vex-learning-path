@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 
     if (parse_result == 1)
     {
-        /*run the timer*/
+        vext_controller(&timer_config);
     }
     else
     {
