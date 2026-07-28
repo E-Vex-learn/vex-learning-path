@@ -25,58 +25,55 @@ void vext_sleeper(int sec, int n_sec)
         : "rcx", "r11", "memory");
 }
 
-void vext_counter(timer_config_t *timer_config)
+uint_fast8_t vext_counter(timer_config_t *timer_config)
 {
-    vext_sleeper(0, 10);
-    timer_config->sec -= 1;
-}
+    vext_sleeper(1, 0);
 
-uint8_t vext_validator(timer_config_t *timer_config)
-{
-    /*
-    This function return 4 types of conditions
-    Status A : end of a minute
-    Status B : end of a session
-    Status C : end of all sessions
-    status FF : defult
-    */
+    /* decrease one second if the sec is greater than 00 */
+    if (timer_config->sec > 0)
+    {
+        timer_config->sec -= 1;
+    }
+    /*---------------------------------------------------*/
 
-    /* when sec become zero decrease the minutes by 1 */
+    /* when sec become zero and the min is greater than 00, decrease the minutes by 1 */
     if (timer_config->sec <= 0 && timer_config->min > 0)
     {
         timer_config->min -= 1;
         timer_config->sec = 60;
-        return 0xA; /*end of a minute*/
+        return 0x01; /*End of a minute*/
     }
-    /*------------------------------------------------*/
+    /*--------------------------------------------------------------------------------*/
 
-    /*-------when min become zero increase the session number by 1-------*/
-    /*--------------return 404 at the end of the session-----------------*/
-    if (timer_config->min <= 0 && timer_config->sec <= 0 && timer_config->ses < timer_config->session)
+    /* end of counting operation when sec and min are both 0 */
+    if (timer_config->sec <= 0 && timer_config->min <= 0)
     {
-        timer_config->ses += 1;
-        timer_config->min = timer_config->break_time;
-        return 0xB; /*end of a session*/
+        return 0x0; /*End of the timer*/
     }
-    /*--------------------------------------------------------------------*/
+    /*-------------------------------------------------------*/
 
-    /*----------------------------------------End of all sessions--------------------------------------*/
-    if (timer_config->ses >= timer_config->session && timer_config->min <= 0 && timer_config->sec <= 0)
+    return 0xFF; /*Time is working*/
+}
+uint_fast8_t vext_validator(timer_config_t *timer_config)
+{
+    /* This function return 2 types of conditions
+       Status A : Finish
+       Status B : Break Phase */
+
+    /*------------------------------------Break or End of all sessions----------------------------------*/
+    if (timer_config->ses > timer_config->session && timer_config->min <= 0 && timer_config->sec <= 0)
     {
-        return 0xC; /*end of all sessions*/
+        return 0xA; /*Finish: end of all sessions*/
+    }
+    else /* Break  Phase  */
+    {
+        return 0xB; /*Break Phase: end of a study session*/
     }
     /*-------------------------------------------------------------------------------------------------*/
-
-    return 0xFF;
 }
-
-uint8_t vext_break(timer_config_t *timer_config)
-{
-}
-
 void vext_printer(timer_config_t *timer_config)
 {
-    uint8_t s, m, h;
+    unsigned int s, m, h;
     s = timer_config->sec;
     m = timer_config->min;
     h = 0;
@@ -89,9 +86,9 @@ void vext_printer(timer_config_t *timer_config)
 
     if (timer_config->validator_status == 0xB)
     {
-        printf("Break  %02d:%02d:%02d | session : %d of %d\n", h, m, s, timer_config->ses, timer_config->session);
+        printf("Break  %02d:%02d:%02d\n", h, m, s);
     }
-    else if (timer_config->validator_status == 0xC)
+    else if (timer_config->validator_status == 0xA)
     {
         printf("Finish\n");
     }
@@ -100,19 +97,47 @@ void vext_printer(timer_config_t *timer_config)
         printf("Study  %02d:%02d:%02d | session : %d of %d\n", h, m, s, timer_config->ses, timer_config->session);
     }
 }
-
-void vext_controller(timer_config_t *timer_config)
+uint_fast8_t vext_study(timer_config_t *timer_config)
 {
     timer_config->sec = 0;
     timer_config->min = timer_config->session_time;
-    timer_config->ses = 1;
-
     timer_config->validator_status = 0x0;
 
-    while (timer_config->validator_status != 0xC)
+    while (vext_counter(timer_config) != 0x0)
     {
-        vext_counter(timer_config);
-        timer_config->validator_status = vext_validator(timer_config);
         vext_printer(timer_config);
     }
+
+    timer_config->ses += 1;
+    return 0x0; /*End of a study session*/
+}
+uint_fast8_t vext_break(timer_config_t *timer_config)
+{
+    timer_config->sec = 0;
+    timer_config->min = timer_config->break_time;
+
+    while (vext_counter(timer_config) != 0)
+    {
+        vext_printer(timer_config);
+    }
+
+    return 0x0; /*End of a break*/
+}
+
+void vext_controller(timer_config_t *timer_config)
+{
+
+    timer_config->ses = 1;
+    timer_config->validator_status = 0x0;
+
+    while (timer_config->validator_status != 0xA)
+    {
+        vext_study(timer_config);
+        timer_config->validator_status = vext_validator(timer_config);
+        if (timer_config->validator_status == 0xB)
+        {
+            vext_break(timer_config);
+        }
+    }
+    vext_printer(timer_config);
 }
