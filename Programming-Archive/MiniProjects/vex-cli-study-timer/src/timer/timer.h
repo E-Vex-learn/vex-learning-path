@@ -7,13 +7,13 @@
 
 typedef struct
 {
-    int session;      /* total number of study sessions */
-    int session_time; /* duration of each session, in minutes */
-    int break_time;   /* duration of break between sessions, in minutes */
+    unsigned int session;      /* total number of study sessions */
+    unsigned int session_time; /* duration of each session, in minutes */
+    unsigned int break_time;   /* duration of break between sessions, in minutes */
     /*-------------------------------------------------------------------------------*/
-    int sec;
-    int min;
-    int ses;
+    unsigned int sec;
+    unsigned int min;
+    unsigned int ses;
 
     uint8_t validator_status;
 
