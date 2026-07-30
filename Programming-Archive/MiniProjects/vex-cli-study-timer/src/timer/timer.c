@@ -108,7 +108,7 @@ void vext_printer(timer_config_t *timer_config)
 
     if (timer_config->validator_status == 0xB)
     {
-        printf("Break  %02d:%02d:%02d\n", h, m, s);
+        printf("Break  %02u:%02u:%02u\n", h, m, s);
     }
     else if (timer_config->validator_status == 0xA)
     {
@@ -116,7 +116,7 @@ void vext_printer(timer_config_t *timer_config)
     }
     else
     {
-        printf("Study  %02d:%02d:%02d | session : %d of %d\n", h, m, s, timer_config->ses, timer_config->session);
+        printf("Study  %02u:%02u:%02u | session : %u of %u\n", h, m, s, timer_config->ses, timer_config->session);
     }
 }
 /*-----------------------------------------------------------------------------------------------------------------------------*/
