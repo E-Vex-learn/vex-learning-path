@@ -9,6 +9,10 @@ typedef struct
     long nanoseconds;
 } vex_timespec_t;
 
+#define BOLD "\033[1m"
+#define BRIGHT_YELLOW "\033[93m"
+#define RESET "\033[0m"
+
 void vext_sleeper(int sec, int n_sec)
 {
 
@@ -71,6 +75,24 @@ uint_fast8_t vext_validator(timer_config_t *timer_config)
     }
     /*-------------------------------------------------------------------------------------------------*/
 }
+
+/*-----------------------------------------------------------------------------------------------------------------------------*/
+void display_start_screen(timer_config_t *timer_config)
+{
+    printf(BRIGHT_YELLOW BOLD "  ██╗   ██╗███████╗██╗  ██╗      ████████╗██╗███╗   ███╗███████╗██████╗ " RESET "\n");
+    printf(BRIGHT_YELLOW BOLD "  ██║   ██║██╔════╝╚██╗██╔╝      ╚══██╔══╝██║████╗ ████║██╔════╝██╔══██╗" RESET "\n");
+    printf(BRIGHT_YELLOW BOLD "  ██║   ██║█████╗   ╚███╔╝ █████╗   ██║   ██║██╔████╔██║█████╗  ██████╔╝" RESET "\n");
+    printf(BRIGHT_YELLOW BOLD "  ╚██╗ ██╔╝██╔══╝   ██╔██╗ ╚════╝   ██║   ██║██║╚██╔╝██║██╔══╝  ██╔══██╗" RESET "\n");
+    printf(BRIGHT_YELLOW BOLD "   ╚████╔╝ ███████╗██╔╝ ██╗         ██║   ██║██║ ╚═╝ ██║███████╗██║  ██║" RESET "\n");
+    printf(BRIGHT_YELLOW BOLD "    ╚═══╝  ╚══════╝╚═╝  ╚═╝         ╚═╝   ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝" RESET "\n");
+
+    printf("\n");
+
+    printf("Sessions:  %d\n", timer_config->session);
+    printf("Study   :  %d minutes\n", timer_config->session_time);
+    printf("Break   :  %d minutes\n", timer_config->break_time);
+    printf("Total   :  %d minutes\n", ((timer_config->session_time + timer_config->break_time) * (timer_config->session)));
+}
 void vext_printer(timer_config_t *timer_config)
 {
     unsigned int s, m, h;
@@ -97,6 +119,8 @@ void vext_printer(timer_config_t *timer_config)
         printf("Study  %02d:%02d:%02d | session : %d of %d\n", h, m, s, timer_config->ses, timer_config->session);
     }
 }
+/*-----------------------------------------------------------------------------------------------------------------------------*/
+
 uint_fast8_t vext_study(timer_config_t *timer_config)
 {
     timer_config->sec = 0;
@@ -129,6 +153,8 @@ void vext_controller(timer_config_t *timer_config)
 
     timer_config->ses = 1;
     timer_config->validator_status = 0x0;
+
+    display_start_screen(timer_config);
 
     while (timer_config->validator_status != 0xA)
     {
