@@ -148,11 +148,26 @@ uint_fast8_t vext_break(timer_config_t *timer_config)
     return 0x0; /*End of a break*/
 }
 
+uint_fast8_t vext_input_validator(timer_config_t *timer_config)
+{
+    if (timer_config->session > 255 || timer_config->session_time > 255 || timer_config->break_time > 255)
+    {
+        return 0x1F; /*Out of range*/
+    }
+    return 0x0; /*Valid*/
+}
+
 void vext_controller(timer_config_t *timer_config)
 {
 
     timer_config->ses = 1;
     timer_config->validator_status = 0x0;
+
+    if (vext_input_validator(timer_config) == 0x1F)
+    {
+        printf("Error: Out of range\n");
+        return;
+    }
 
     display_start_screen(timer_config);
 
