@@ -91,7 +91,7 @@ void display_start_screen(timer_config_t *timer_config)
     printf("Sessions:  %d\n", timer_config->session);
     printf("Study   :  %d minutes\n", timer_config->session_time);
     printf("Break   :  %d minutes\n", timer_config->break_time);
-    printf("Total   :  %d minutes\n", ((timer_config->session_time + timer_config->break_time) * (timer_config->session)));
+    printf("Total   :  %d minutes\n\n", ((timer_config->session_time + timer_config->break_time) * (timer_config->session)));
 }
 void vext_printer(timer_config_t *timer_config)
 {
@@ -108,15 +108,18 @@ void vext_printer(timer_config_t *timer_config)
 
     if (timer_config->validator_status == 0xB)
     {
-        printf("Break  %02u:%02u:%02u\n", h, m, s);
+        printf("\r\e[2KBreak  %02u:%02u:%02u", h, m, s);
+        fflush(stdout);
     }
     else if (timer_config->validator_status == 0xA)
     {
+        printf("\033[H\033[J");
         printf("Finish\n");
     }
     else
     {
-        printf("Study  %02u:%02u:%02u | session : %u of %u\n", h, m, s, timer_config->ses, timer_config->session);
+        printf("\r\e[2KStudy  %02u:%02u:%02u | session : %u of %u", h, m, s, timer_config->ses, timer_config->session);
+        fflush(stdout);
     }
 }
 /*-----------------------------------------------------------------------------------------------------------------------------*/
@@ -159,7 +162,6 @@ uint_fast8_t vext_input_validator(timer_config_t *timer_config)
 
 void vext_controller(timer_config_t *timer_config)
 {
-
     timer_config->ses = 1;
     timer_config->validator_status = 0x0;
 
@@ -168,6 +170,8 @@ void vext_controller(timer_config_t *timer_config)
         printf("Error: Out of range\n");
         return;
     }
+
+    printf("\033[H\033[J");
 
     display_start_screen(timer_config);
 
