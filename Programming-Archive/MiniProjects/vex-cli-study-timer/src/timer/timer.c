@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <sys/syscall.h>
 #include "timer.h"
+#include "alarm.h"
 
 typedef struct
 {
@@ -106,17 +108,17 @@ void vext_printer(timer_config_t *timer_config)
         m -= 60;
     }
 
-    if (timer_config->validator_status == 0xB)
+    if (timer_config->validator_status == 0xB) /*break runing*/
     {
         printf("\r\e[2KBreak  %02u:%02u:%02u", h, m, s);
         fflush(stdout);
     }
-    else if (timer_config->validator_status == 0xA)
+    else if (timer_config->validator_status == 0xA) /*finish*/
     {
         printf("\033[H\033[J");
         printf("Finish\n");
     }
-    else
+    else /*study runing*/
     {
         printf("\r\e[2KStudy  %02u:%02u:%02u | session : %u of %u", h, m, s, timer_config->ses, timer_config->session);
         fflush(stdout);
@@ -136,7 +138,10 @@ uint_fast8_t vext_study(timer_config_t *timer_config)
     }
 
     timer_config->ses += 1;
-    return 0x0; /*End of a study session*/
+
+    vext_alarm();
+
+    return 0xAA; /*End of a study session*/
 }
 uint_fast8_t vext_break(timer_config_t *timer_config)
 {
@@ -148,7 +153,9 @@ uint_fast8_t vext_break(timer_config_t *timer_config)
         vext_printer(timer_config);
     }
 
-    return 0x0; /*End of a break*/
+    vext_alarm();
+
+    return 0xBB; /*End of a break*/
 }
 
 uint_fast8_t vext_input_validator(timer_config_t *timer_config)
@@ -171,13 +178,14 @@ void vext_controller(timer_config_t *timer_config)
         return;
     }
 
-    printf("\033[H\033[J");
+    printf("\033[H\033[J"); /*clear the screen*/
 
     display_start_screen(timer_config);
 
     while (timer_config->validator_status != 0xA)
     {
         vext_study(timer_config);
+
         timer_config->validator_status = vext_validator(timer_config);
         if (timer_config->validator_status == 0xB)
         {
