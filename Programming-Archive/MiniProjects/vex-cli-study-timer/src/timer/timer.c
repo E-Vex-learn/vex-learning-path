@@ -2,9 +2,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/syscall.h>
-#include "timer.h"
+#include <sys/time.h>
+#include <time.h>
 #include "alarm.h"
 #include "print.h"
+
+#include "timer.h" /*to get the stucts*/
 
 typedef struct
 {
@@ -26,6 +29,22 @@ void vext_sleeper(int sec, int n_sec)
         :
         : "r"(syscall_number), "r"(rdi), "r"(rsi)
         : "rcx", "r11", "memory");
+}
+long vext_start_time()
+{
+    vex_timespec_t t = {0, 0};
+
+    register long syscall_number __asm__("rax") = SYS_clock_gettime;
+    register long rdi __asm__("rdi") = CLOCK_MONOTONIC;
+    register vex_timespec_t *rsi __asm__("rsi") = &t;
+
+    __asm__ volatile(
+        "syscall"
+        :
+        : "r"(syscall_number), "r"(rdi), "r"(rsi)
+        : "rcx", "r11", "memory");
+
+    return t.seconds;
 }
 
 uint_fast8_t vext_counter(timer_config_t *timer_config)
@@ -57,6 +76,30 @@ uint_fast8_t vext_counter(timer_config_t *timer_config)
 
     return 0xFF; /*Time is working*/
 }
+uint_fast8_t vext_counter_v2(timer_config_t *timer_config)
+{
+    timer_config->time_now.sec = vext_start_time();
+
+    unsigned int remaining = timer_config->target_end_sec - timer_config->time_now.sec;
+    if (remaining < 0)
+    {
+        remaining = 0;
+    }
+
+    timer_config->min = remaining / 60;
+    timer_config->sec = remaining % 60;
+
+    /* end of counting operation */
+    if (remaining <= 0)
+    {
+        return 0x0; /*End of the timer*/
+    }
+
+    vext_sleeper(1, 0); /*the sleep here dose not effect on the timer. Just for the display*/
+
+    return 0xFF; /*Time is working*/
+}
+
 uint_fast8_t vext_validator(timer_config_t *timer_config)
 {
     /* This function return 2 types of conditions
@@ -81,7 +124,10 @@ uint_fast8_t vext_study(timer_config_t *timer_config)
     timer_config->min = timer_config->session_time;
     timer_config->validator_status = 0x0;
 
-    while (vext_counter(timer_config) != 0x0)
+    timer_config->started_time.sec = vext_start_time();
+    timer_config->target_end_sec = timer_config->started_time.sec + timer_config->session_time * 60;
+
+    while (vext_counter_v2(timer_config) != 0x0)
     {
         vext_printer(timer_config);
     }
@@ -97,7 +143,10 @@ uint_fast8_t vext_break(timer_config_t *timer_config)
     timer_config->sec = 0;
     timer_config->min = timer_config->break_time;
 
-    while (vext_counter(timer_config) != 0)
+    timer_config->started_time.sec = vext_start_time();
+    timer_config->target_end_sec = timer_config->started_time.sec + timer_config->break_time * 60;
+
+    while (vext_counter_v2(timer_config) != 0)
     {
         vext_printer(timer_config);
     }
@@ -118,6 +167,7 @@ uint_fast8_t vext_input_validator(timer_config_t *timer_config)
 
 void vext_controller(timer_config_t *timer_config)
 {
+
     timer_config->ses = 1;
     timer_config->validator_status = 0x0;
 
