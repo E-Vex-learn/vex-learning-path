@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/select.h>
+#include "../../sounds/tone.h"
+
+extern int stop_playback;
 
 void vext_alarm(void)
 {
-    system("aplay -q /home/elia/Documents/vex-learning-archive/Programming-Archive/MiniProjects/vex-cli-study-timer/sounds/Death-Note-Alarm.wav &");
-    printf("End of the session");
-
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF)
-        ;
-    system("pkill aplay > /dev/null 2>&1");
+    stop_playback = 0;
+    printf("\nAlarm ringing! Press [ENTER] to stop...\n");
+    play_megalovania();
 }
