@@ -83,10 +83,14 @@ uint_fast8_t vext_counter_v2(timer_config_t *timer_config)
 {
     timer_config->time_now.sec = vext_start_time();
 
-    unsigned int remaining = timer_config->target_end_sec - timer_config->time_now.sec;
-    if (remaining < 0)
+    uint32_t remaining;
+    if (timer_config->time_now.sec >= timer_config->target_end_sec)
     {
         remaining = 0;
+    }
+    else
+    {
+        remaining = timer_config->target_end_sec - timer_config->time_now.sec;
     }
 
     timer_config->min = remaining / 60;
