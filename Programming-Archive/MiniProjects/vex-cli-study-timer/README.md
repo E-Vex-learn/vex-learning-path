@@ -41,6 +41,12 @@ vex-cli-study-timer/
 ## Build
 
 ```bash
+make
+````
+
+or
+
+```bash
 gcc src/main.c src/cli/cli.c src/timer/timer.c src/timer/print.c src/timer/alarm.c sounds/tone.c -lm -o vex-timer
 ````
 
