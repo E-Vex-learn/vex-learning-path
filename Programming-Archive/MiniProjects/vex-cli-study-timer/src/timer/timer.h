@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include "alarm.h"
+#include "../../sounds/tone.h"
 
 typedef struct
 {

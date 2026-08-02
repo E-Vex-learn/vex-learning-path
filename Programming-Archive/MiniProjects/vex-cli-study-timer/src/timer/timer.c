@@ -6,6 +6,7 @@
 #include <time.h>
 #include "alarm.h"
 #include "print.h"
+#include "../../sounds/tone.h"
 
 #include "timer.h" /*to get the stucts*/
 
@@ -134,8 +135,14 @@ uint_fast8_t vext_study(timer_config_t *timer_config)
 
     timer_config->ses += 1;
 
-    vext_alarm();
+    if (vext_validator(timer_config) == 0xB)
+    {
 
+        vext_alarm();
+        printf("\033[H\033[J");
+        display_banner();
+        display_info(timer_config);
+    }
     return 0xAA; /*End of a study session*/
 }
 uint_fast8_t vext_break(timer_config_t *timer_config)
@@ -152,6 +159,9 @@ uint_fast8_t vext_break(timer_config_t *timer_config)
     }
 
     vext_alarm();
+    printf("\033[H\033[J");
+    display_banner();
+    display_info(timer_config);
 
     return 0xBB; /*End of a break*/
 }
@@ -179,7 +189,8 @@ void vext_controller(timer_config_t *timer_config)
 
     printf("\033[H\033[J"); /*clear the screen*/
 
-    display_start_screen(timer_config);
+    display_banner();
+    display_info(timer_config);
 
     while (timer_config->validator_status != 0xA)
     {
@@ -192,4 +203,5 @@ void vext_controller(timer_config_t *timer_config)
         }
     }
     vext_printer(timer_config);
+    play_finish_music();
 }
