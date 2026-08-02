@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -137,7 +139,6 @@ uint_fast8_t vext_study(timer_config_t *timer_config)
 
     if (vext_validator(timer_config) == 0xB)
     {
-
         vext_alarm();
         printf("\033[H\033[J");
         display_banner();
