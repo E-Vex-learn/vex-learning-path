@@ -18,21 +18,30 @@ The timer uses a custom argument parser and calls the Linux `nanosleep` syscall 
 ```
 
 vex-cli-study-timer/
-├── src/
-│   ├── main.c
-│   ├── cli/
-│   │   ├── cli.c
-│   │   └── cli.h
-│   └── timer/
-│       ├── timer.c
-│       └── timer.h
-
+├── README.md
+├── sounds/
+│   ├── Alarm.wav
+│   ├── tone.c
+│   └── tone.h
+└── src/
+    ├── main.c
+    ├── cli/
+    │   ├── cli.c
+    │   └── cli.h
+    └── timer/
+        ├── alarm.c
+        ├── alarm.h
+        ├── internals/
+        ├── print.c
+        ├── print.h
+        ├── timer.c
+        └── timer.h
 ````
 
 ## Build
 
 ```bash
-gcc src/main.c src/cli/cli.c src/timer/timer.c -o vex-timer
+gcc src/main.c src/cli/cli.c src/timer/timer.c src/timer/print.c src/timer/alarm.c sounds/tone.c -lm -o vex-timer
 ````
 
 ## Usage
