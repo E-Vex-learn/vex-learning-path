@@ -7,7 +7,7 @@
 #define SAMPLE_RATE 44100
 #define PI 3.14159265358979323846
 
-// --- THE ULTIMATE NOTE DICTIONARY ---
+/* --- THE ULTIMATE NOTE DICTIONARY --- */
 #define NOTE_BB3 233.08
 #define NOTE_B3 246.94
 #define NOTE_C4 261.63
@@ -33,6 +33,31 @@
 #define NOTE_EB6 1244.51
 
 int stop_playback = 0;
+
+/* Single aplay pipe shared across all notes in a song, instead of
+   spawning a fresh aplay process per note. Opened lazily on first
+   write, closed explicitly once a song finishes (see close_audio_pipe
+   calls at the end of each play_* song function below). */
+static FILE *g_audio_pipe = NULL;
+
+static FILE *get_audio_pipe(void)
+{
+    if (g_audio_pipe == NULL)
+    {
+        g_audio_pipe = popen("aplay -f S16_LE -r 44100 -c 1 -q", "w");
+    }
+    return g_audio_pipe;
+}
+
+static void close_audio_pipe(void)
+{
+    if (g_audio_pipe != NULL)
+    {
+        pclose(g_audio_pipe);
+        g_audio_pipe = NULL;
+    }
+}
+
 int is_enter_pressed()
 {
     struct timeval tv = {0, 0}; // 0 timeout means "do not wait"
@@ -59,7 +84,7 @@ void play_beep(float frequency, float duration_sec)
         return;
     }
 
-    FILE *pipe = popen("aplay -f S16_LE -r 44100 -c 1 -q", "w");
+    FILE *pipe = get_audio_pipe();
     if (!pipe)
         return;
 
@@ -73,8 +98,7 @@ void play_beep(float frequency, float duration_sec)
         fwrite(&sample, sizeof(sample), 1, pipe);
     }
 
-    pclose(pipe);
-    usleep(20000);
+    fflush(pipe);
 }
 void play_triad(float freq1, float freq2, float freq3, float duration_sec)
 {
@@ -87,7 +111,7 @@ void play_triad(float freq1, float freq2, float freq3, float duration_sec)
         return;
     }
 
-    FILE *pipe = popen("aplay -f S16_LE -r 44100 -c 1 -q", "w");
+    FILE *pipe = get_audio_pipe();
     if (!pipe)
         return;
 
@@ -110,8 +134,7 @@ void play_triad(float freq1, float freq2, float freq3, float duration_sec)
         fwrite(&sample, sizeof(sample), 1, pipe);
     }
 
-    pclose(pipe);
-    usleep(20000);
+    fflush(pipe);
 }
 void play_rest(float duration_sec)
 {
@@ -146,6 +169,8 @@ void play_some_beep()
     play_beep(E, 0.4);
     play_beep(E, 0.4);
     play_beep(E, 0.8);
+
+    close_audio_pipe();
 }
 void play_mario_theme()
 {
@@ -164,6 +189,8 @@ void play_mario_theme()
     play_rest(0.40);
     play_beep(NOTE_G4, 0.20);
     play_rest(0.40);
+
+    close_audio_pipe();
 }
 void play_imperial_march()
 {
@@ -184,6 +211,8 @@ void play_imperial_march()
     play_beep(NOTE_EB4, 0.25);
     play_beep(NOTE_BB4, 0.15);
     play_beep(NOTE_G4, 0.80);
+
+    close_audio_pipe();
 }
 void play_tetris()
 {
@@ -211,6 +240,8 @@ void play_tetris()
     play_beep(NOTE_C5, 0.4);
     play_beep(NOTE_A4, 0.4);
     play_beep(NOTE_A4, 0.6);
+
+    close_audio_pipe();
 }
 void play_megalovania()
 {
@@ -275,6 +306,8 @@ void play_megalovania()
             i = 0;
         }
     }
+
+    close_audio_pipe();
 }
 void play_hard_to_say_goodbye()
 {
@@ -307,9 +340,12 @@ void play_hard_to_say_goodbye()
 
     play_beep(NOTE_D6, 0.8);
     play_beep(NOTE_C6, 1.5); // Final fading note
+
+    close_audio_pipe();
 }
 void play_finish_music()
 {
+    stop_playback = 0;
     // Define standard musical frequencies (Equal Temperament)
     float C3 = 130.81, F3 = 174.61, G3 = 196.00, A3 = 220.00;
     float B3 = 246.94, C4 = 261.63, D4 = 293.66, E4 = 329.63;
@@ -350,6 +386,8 @@ void play_finish_music()
 
     // End on a massive, resolving C major chord that spans multiple octaves
     play_triad(C3, E4, G4, 2.5);
+
+    close_audio_pipe();
 }
 void play_cinematic_ambient()
 {
@@ -375,4 +413,6 @@ void play_cinematic_ambient()
 
     // Final long resolving chord (A minor 9), played for 4 seconds
     play_triad(A2, C3, B3, 4.0); // B3 is now defined
+
+    close_audio_pipe();
 }
