@@ -7,6 +7,7 @@ LDFLAGS = -lm
 SRC = \
 src/main.c \
 src/cli/cli.c \
+src/timer/counter.c \
 src/timer/timer.c \
 src/timer/print.c \
 src/timer/alarm.c \

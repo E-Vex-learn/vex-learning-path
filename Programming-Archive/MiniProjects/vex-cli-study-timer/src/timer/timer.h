@@ -4,11 +4,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <sys/syscall.h>
-#include <sys/time.h>
-#include <time.h>
-#include "alarm.h"
-#include "../../sounds/tone.h"
 
 typedef struct
 {
@@ -47,5 +42,4 @@ typedef struct
 
 void vext_controller(timer_config_t *timer_config);
 
-#include "print.h"
 #endif
