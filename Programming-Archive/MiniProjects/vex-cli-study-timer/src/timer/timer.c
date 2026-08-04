@@ -36,8 +36,13 @@ uint_fast8_t vext_study(timer_config_t *timer_config)
     timer_config->started_time.sec = vext_start_time();
     timer_config->target_end_sec = timer_config->started_time.sec + timer_config->session_time * 60;
 
-    while (vext_counter_v2(timer_config) != 0x0)
+    while (1)
     {
+        if (vext_counter_v2(timer_config) == 0x0)
+        {
+            vext_printer(timer_config);
+            break;
+        }
         vext_printer(timer_config);
     }
 
@@ -60,8 +65,13 @@ uint_fast8_t vext_break(timer_config_t *timer_config)
     timer_config->started_time.sec = vext_start_time();
     timer_config->target_end_sec = timer_config->started_time.sec + timer_config->break_time * 60;
 
-    while (vext_counter_v2(timer_config) != 0)
+    while (1)
     {
+        if (vext_counter_v2(timer_config) == 0x0)
+        {
+            vext_printer(timer_config);
+            break;
+        }
         vext_printer(timer_config);
     }
 
