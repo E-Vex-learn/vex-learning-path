@@ -10,12 +10,10 @@
 #define BRIGHT_CYAN "\033[96m"
 #define RESET "\033[0m"
 
-/* لون لكل حالة: دراسة = أخضر، استراحة = سماوي، انتهاء = أصفر (نفس لون الشعار) */
 #define STUDY_COLOR BRIGHT_GREEN
 #define BREAK_COLOR BRIGHT_CYAN
 #define FINISH_COLOR BRIGHT_YELLOW
 
-/* أسطر الشعار (banner) بألوان جاهزة، تجنّبًا لتكرار BRIGHT_YELLOW BOLD ... RESET في كل سطر */
 #define LOGO_LINE(txt) BRIGHT_YELLOW BOLD txt RESET "\n"
 
 #define STATUS_BREAK_RUNNING 0xB

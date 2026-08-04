@@ -91,7 +91,7 @@ uint_fast8_t vext_counter_v2(timer_config_t *timer_config)
     timer_config->time_now.sec = vext_start_time();
 
     uint32_t remaining;
-    if (timer_config->time_now.sec >= timer_config->target_end_sec)
+    if (timer_config->time_now.sec >= timer_config->target_end_sec) /* Prevent negative remaining time */
     {
         remaining = 0;
     }
