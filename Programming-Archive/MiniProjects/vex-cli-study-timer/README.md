@@ -47,7 +47,7 @@ make
 or
 
 ```bash
-gcc src/main.c src/cli/cli.c src/timer/timer.c src/timer/print.c src/timer/alarm.c sounds/tone.c -lm -o vex-timer
+gcc src/main.c src/cli/cli.c src/timer/timer.c src/timer/print.c src/timer/alarm.c src/timer/counter.c sounds/tone.c -lm -o vex-timer
 ````
 
 ## Usage
